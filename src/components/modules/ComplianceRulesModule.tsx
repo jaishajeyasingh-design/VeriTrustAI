@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Plus,
   CheckCircle2,
@@ -6,7 +7,9 @@ import {
   Play,
   Edit2,
   Check,
-  Sparkles
+  Sparkles,
+  ShieldAlert,
+  Lock
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { PriorityBadge } from '../common/PriorityBadge';
@@ -15,7 +18,8 @@ import { DemoDisclaimer } from '../common/DemoDisclaimer';
 import type { ComplianceRule, PriorityLevel } from '../../types';
 
 export const ComplianceRulesModule: React.FC = () => {
-  const { rules, toggleRule, addRule, showToast } = useApp();
+  const { rules, toggleRule, addRule, showToast, currentRole } = useApp();
+  const navigate = useNavigate();
 
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [testModalRule, setTestModalRule] = useState<ComplianceRule | null>(null);
@@ -45,34 +49,78 @@ export const ComplianceRulesModule: React.FC = () => {
     setRuleDesc('');
   };
 
+  // If applicant, restrict access
+  if (currentRole === 'applicant') {
+    return (
+      <div className="space-y-6">
+        <DemoDisclaimer variant="banner" moduleName="Compliance Rules Engine" />
+        <div className="bg-white p-10 rounded-2xl border border-slate-200/80 shadow-xs text-center max-w-xl mx-auto space-y-4">
+          <div className="w-14 h-14 rounded-2xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center mx-auto shadow-xs">
+            <ShieldAlert className="w-7 h-7" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-slate-900">Restricted Access Module</h2>
+            <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
+              The Statutory Compliance Rules Matrix is reserved for Regulatory Reviewers and System Administrators. Institutional applicants do not have privileges to view or reconfigure internal audit algorithms.
+            </p>
+          </div>
+          <div className="pt-2">
+            <button
+              onClick={() => navigate('/applications')}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-xs transition-all cursor-pointer"
+            >
+              Return to My Applications →
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Demo Disclaimer */}
       <DemoDisclaimer variant="banner" moduleName="Compliance Rules Engine" />
+
+      {/* Reviewer Read-only Info Banner */}
+      {currentRole === 'reviewer' && (
+        <div className="p-3.5 bg-blue-50/80 border border-blue-200 rounded-xl text-xs flex items-center justify-between text-blue-900">
+          <div className="flex items-center gap-2">
+            <Lock className="w-4 h-4 text-blue-600 shrink-0" />
+            <span>
+              <strong>Read-Only Mode:</strong> Reviewers can inspect the statutory matrix. Rule toggling and parameter adjustments require Administrator permissions.
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-              Compliance Rules (Demo)
+              Compliance Rules {currentRole === 'reviewer' ? '(Read-Only Matrix)' : '(Governance)'}
             </h1>
             <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 font-mono">
               v2.4 Matrix
             </span>
           </div>
           <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            Manage verification rules, statutory constraints, and tolerance thresholds for regulatory cross-checking.
+            {currentRole === 'reviewer'
+              ? 'Inspect verification rules, statutory constraints, and tolerance thresholds for regulatory cross-checking.'
+              : 'Configure verification rules, statutory constraints, and tolerance thresholds for regulatory cross-checking.'}
           </p>
         </div>
 
-        <button
-          onClick={() => setAddModalOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-sm shadow-blue-500/20 transition-all cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add Rule</span>
-        </button>
+        {currentRole === 'administrator' && (
+          <button
+            onClick={() => setAddModalOpen(true)}
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-sm shadow-blue-500/20 transition-all cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add Rule</span>
+          </button>
+        )}
       </div>
 
       {/* Rules Summary Banner */}
@@ -158,8 +206,12 @@ export const ComplianceRulesModule: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
+                        disabled={currentRole !== 'administrator'}
                         onClick={() => toggleRule(rule.id)}
-                        className={`w-10 h-5 flex items-center rounded-full p-0.5 transition-colors cursor-pointer ${
+                        title={currentRole !== 'administrator' ? 'Modifying rules requires Administrator privileges' : 'Toggle rule active status'}
+                        className={`w-10 h-5 flex items-center rounded-full p-0.5 transition-colors ${
+                          currentRole !== 'administrator' ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
+                        } ${
                           rule.enabled ? 'bg-blue-600' : 'bg-slate-300'
                         }`}
                         aria-label="Toggle rule status"
@@ -189,13 +241,15 @@ export const ComplianceRulesModule: React.FC = () => {
                         <Play className="w-3 h-3" />
                         <span>Test</span>
                       </button>
-                      <button
-                        onClick={() => showToast(`Editing configuration for ${rule.id}`)}
-                        className="p-1 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100"
-                        title="Edit Rule"
-                      >
-                        <Edit2 className="w-3.5 h-3.5" />
-                      </button>
+                      {currentRole === 'administrator' && (
+                        <button
+                          onClick={() => showToast(`Editing configuration for ${rule.id}`)}
+                          className="p-1 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 cursor-pointer"
+                          title="Edit Rule"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

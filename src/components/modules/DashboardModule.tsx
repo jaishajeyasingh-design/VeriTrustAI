@@ -6,7 +6,6 @@ import {
   AlertTriangle,
   Clock,
   ArrowUpRight,
-  ArrowDownRight,
   Plus,
   Sparkles,
   AlertCircle,
@@ -19,7 +18,7 @@ import { DemoDisclaimer } from '../common/DemoDisclaimer';
 import { verificationActivityTrend, aiSimulatedInsights } from '../../data/mockData';
 
 export const DashboardModule: React.FC = () => {
-  const { applications } = useApp();
+  const { applications, currentRole, userProfile } = useApp();
   const navigate = useNavigate();
   const [timeRange, setTimeRange] = useState<'30d' | '7d' | '12m'>('30d');
   const [hoveredPoint, setHoveredPoint] = useState<number | null>(null);
@@ -52,42 +51,77 @@ export const DashboardModule: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Demo Banner */}
-      <DemoDisclaimer variant="banner" moduleName="Verification Command Center" />
+      <DemoDisclaimer
+        variant="banner"
+        moduleName={
+          currentRole === 'applicant'
+            ? 'Institutional Applicant Portal'
+            : currentRole === 'reviewer'
+            ? 'Reviewer Command Center'
+            : 'Executive Governance Center'
+        }
+      />
 
       {/* Top Header & Quick Action */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-              Verification Command Center
+              {currentRole === 'applicant'
+                ? 'Institutional Applicant Portal'
+                : currentRole === 'reviewer'
+                ? 'Reviewer Command Center'
+                : 'Verification Command Center'}
             </h1>
             <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700">
               Live
             </span>
           </div>
           <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            Monitor institutional applications, document integrity scorecards, and regulatory compliance status.
+            {currentRole === 'applicant'
+              ? `Welcome back, ${userProfile.name} • ${userProfile.organization}. Track your accreditation dossiers and document compliance.`
+              : currentRole === 'reviewer'
+              ? 'Adjudicate institutional applications, inspect OCR extractions, and review compliance scorecards.'
+              : 'Monitor institutional applications, document integrity scorecards, and regulatory compliance status.'}
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => navigate('/new-verification')}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-semibold rounded-xl shadow-sm shadow-blue-500/25 transition-all cursor-pointer"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Start New Verification</span>
-          </button>
+          {currentRole === 'applicant' ? (
+            <button
+              onClick={() => navigate('/new-verification')}
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-semibold rounded-xl shadow-sm shadow-emerald-500/25 transition-all cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Submit New Application</span>
+            </button>
+          ) : currentRole === 'reviewer' ? (
+            <button
+              onClick={() => navigate('/applications')}
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-semibold rounded-xl shadow-sm shadow-blue-500/25 transition-all cursor-pointer"
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>Open Review Queue</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => navigate('/new-verification')}
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-xs font-semibold rounded-xl shadow-sm shadow-indigo-500/25 transition-all cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Start New Verification</span>
+            </button>
+          )}
         </div>
       </div>
 
       {/* 4 KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Total Applications */}
+        {/* Card 1 */}
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
-              Total Applications
+              {currentRole === 'applicant' ? 'My Applications' : 'Total Applications'}
             </span>
             <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
               <FileCheck className="w-4 h-4" />
@@ -95,21 +129,23 @@ export const DashboardModule: React.FC = () => {
           </div>
           <div className="mt-3 flex items-baseline justify-between">
             <span className="text-2xl font-extrabold text-slate-900">
-              {totalApps.toLocaleString()}
+              {currentRole === 'applicant' ? applications.length : totalApps.toLocaleString()}
             </span>
             <span className="inline-flex items-center text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/60">
               <ArrowUpRight className="w-3 h-3 mr-0.5" />
-              +12%
+              {currentRole === 'applicant' ? 'Active' : '+12%'}
             </span>
           </div>
-          <p className="text-[11px] text-slate-400 mt-1">vs. previous 30 days</p>
+          <p className="text-[11px] text-slate-400 mt-1">
+            {currentRole === 'applicant' ? 'Submitted institutional dossiers' : 'vs. previous 30 days'}
+          </p>
         </div>
 
-        {/* Verified */}
+        {/* Card 2 */}
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
-              Verified
+              {currentRole === 'applicant' ? 'Approved Clearances' : 'Verified'}
             </span>
             <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
               <CheckCircle className="w-4 h-4" />
@@ -117,21 +153,25 @@ export const DashboardModule: React.FC = () => {
           </div>
           <div className="mt-3 flex items-baseline justify-between">
             <span className="text-2xl font-extrabold text-slate-900">
-              {verifiedCount.toLocaleString()}
+              {currentRole === 'applicant'
+                ? applications.filter((a) => a.status === 'Verified').length
+                : verifiedCount.toLocaleString()}
             </span>
             <span className="inline-flex items-center text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/60">
               <ArrowUpRight className="w-3 h-3 mr-0.5" />
-              +8%
+              {currentRole === 'applicant' ? '100% Valid' : '+8%'}
             </span>
           </div>
-          <p className="text-[11px] text-slate-400 mt-1">69% compliance clearance</p>
+          <p className="text-[11px] text-slate-400 mt-1">
+            {currentRole === 'applicant' ? 'Regulatory certificates granted' : '69% compliance clearance'}
+          </p>
         </div>
 
-        {/* Needs Review */}
+        {/* Card 3 */}
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
-              Needs Review
+              {currentRole === 'applicant' ? 'In Review Queue' : 'Needs Review'}
             </span>
             <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
               <AlertTriangle className="w-4 h-4" />
@@ -139,21 +179,25 @@ export const DashboardModule: React.FC = () => {
           </div>
           <div className="mt-3 flex items-baseline justify-between">
             <span className="text-2xl font-extrabold text-slate-900">
-              {needsReviewCount.toLocaleString()}
+              {currentRole === 'applicant'
+                ? applications.filter((a) => a.status === 'Needs Review' || a.status === 'Pending').length
+                : needsReviewCount.toLocaleString()}
             </span>
             <span className="inline-flex items-center text-xs font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/60">
               <ArrowUpRight className="w-3 h-3 mr-0.5" />
-              +5%
+              {currentRole === 'applicant' ? 'Underway' : '+5%'}
             </span>
           </div>
-          <p className="text-[11px] text-slate-400 mt-1">Requires human examiner signoff</p>
+          <p className="text-[11px] text-slate-400 mt-1">
+            {currentRole === 'applicant' ? 'Pending council examination' : 'Requires human examiner signoff'}
+          </p>
         </div>
 
-        {/* Pending */}
+        {/* Card 4 */}
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
-              Pending
+              {currentRole === 'applicant' ? 'Compliance Health' : 'Pending'}
             </span>
             <div className="w-9 h-9 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center">
               <Clock className="w-4 h-4" />
@@ -161,14 +205,15 @@ export const DashboardModule: React.FC = () => {
           </div>
           <div className="mt-3 flex items-baseline justify-between">
             <span className="text-2xl font-extrabold text-slate-900">
-              {pendingCount.toLocaleString()}
+              {currentRole === 'applicant' ? '88%' : pendingCount.toLocaleString()}
             </span>
-            <span className="inline-flex items-center text-xs font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
-              <ArrowDownRight className="w-3 h-3 mr-0.5" />
-              -1%
+            <span className="inline-flex items-center text-xs font-semibold text-sky-700 bg-sky-50 px-2 py-0.5 rounded-md border border-sky-200/60">
+              {currentRole === 'applicant' ? 'High Readiness' : 'Queue'}
             </span>
           </div>
-          <p className="text-[11px] text-slate-400 mt-1">In processing & OCR extraction</p>
+          <p className="text-[11px] text-slate-400 mt-1">
+            {currentRole === 'applicant' ? 'Document integrity rating' : 'Awaiting OCR pipeline ingestion'}
+          </p>
         </div>
       </div>
 

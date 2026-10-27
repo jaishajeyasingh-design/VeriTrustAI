@@ -28,59 +28,139 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, setMobileOpen }) =
 
   const needsReviewCount = applications.filter((a) => a.status === 'Needs Review').length;
 
-  const navItems = [
-    {
-      label: 'Overview',
-      path: '/',
-      icon: LayoutDashboard,
-      badge: null
-    },
-    {
-      label: 'Applications',
-      path: '/applications',
-      icon: FileSpreadsheet,
-      badge: needsReviewCount > 0 ? `${needsReviewCount} review` : null,
-      badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/30'
-    },
-    {
-      label: 'New Verification',
-      path: '/new-verification',
-      icon: PlusCircle,
-      badge: 'Step 1-4',
-      badgeColor: 'bg-blue-500/20 text-blue-300 border-blue-500/30'
-    },
-    {
-      label: 'Document Vault',
-      path: '/vault',
-      icon: FileCheck2,
-      badge: null
-    },
-    {
-      label: 'Compliance Rules',
-      path: '/rules',
-      icon: Scale,
-      badge: 'Demo',
-      badgeColor: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30'
-    },
-    {
-      label: 'Verification Reports',
-      path: '/reports',
-      icon: FileText,
-      badge: null
-    },
-    {
-      label: 'Audit Trail',
-      path: '/audit',
-      icon: History,
-      badge: null
-    },
-    {
-      label: 'Settings',
-      path: '/settings',
-      icon: Settings,
-      badge: null
+  // Filter navigation items strictly based on active user persona
+  const navItems = React.useMemo(() => {
+    switch (currentRole) {
+      case 'applicant':
+        return [
+          {
+            label: 'Overview',
+            path: '/',
+            icon: LayoutDashboard,
+            badge: null
+          },
+          {
+            label: 'My Applications',
+            path: '/applications',
+            icon: FileSpreadsheet,
+            badge: 'Active',
+            badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+          },
+          {
+            label: 'Submit Application',
+            path: '/new-verification',
+            icon: PlusCircle,
+            badge: 'New',
+            badgeColor: 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+          },
+          {
+            label: 'My Documents',
+            path: '/vault',
+            icon: FileCheck2,
+            badge: null
+          }
+        ];
+
+      case 'reviewer':
+        return [
+          {
+            label: 'Overview',
+            path: '/',
+            icon: LayoutDashboard,
+            badge: null
+          },
+          {
+            label: 'Review Queue',
+            path: '/applications',
+            icon: FileSpreadsheet,
+            badge: needsReviewCount > 0 ? `${needsReviewCount} review` : null,
+            badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+          },
+          {
+            label: 'Document Vault',
+            path: '/vault',
+            icon: FileCheck2,
+            badge: null
+          },
+          {
+            label: 'Compliance Rules',
+            path: '/rules',
+            icon: Scale,
+            badge: 'Rules Matrix',
+            badgeColor: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30'
+          },
+          {
+            label: 'Verification Reports',
+            path: '/reports',
+            icon: FileText,
+            badge: null
+          },
+          {
+            label: 'Audit Trail',
+            path: '/audit',
+            icon: History,
+            badge: null
+          }
+        ];
+
+      case 'administrator':
+      default:
+        return [
+          {
+            label: 'Overview',
+            path: '/',
+            icon: LayoutDashboard,
+            badge: null
+          },
+          {
+            label: 'All Applications',
+            path: '/applications',
+            icon: FileSpreadsheet,
+            badge: needsReviewCount > 0 ? `${needsReviewCount} review` : null,
+            badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+          },
+          {
+            label: 'New Verification',
+            path: '/new-verification',
+            icon: PlusCircle,
+            badge: 'Admin Flow',
+            badgeColor: 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+          },
+          {
+            label: 'Document Vault',
+            path: '/vault',
+            icon: FileCheck2,
+            badge: null
+          },
+          {
+            label: 'Compliance Rules',
+            path: '/rules',
+            icon: Scale,
+            badge: 'Governance',
+            badgeColor: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30'
+          },
+          {
+            label: 'Verification Reports',
+            path: '/reports',
+            icon: FileText,
+            badge: null
+          },
+          {
+            label: 'Audit Trail',
+            path: '/audit',
+            icon: History,
+            badge: 'Security',
+            badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+          },
+          {
+            label: 'System Settings',
+            path: '/settings',
+            icon: Settings,
+            badge: null
+          }
+        ];
     }
-  ];
+  }, [currentRole, applications.length, needsReviewCount]);
 
   return (
     <>
@@ -217,14 +297,30 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, setMobileOpen }) =
         <div className="p-3 border-t border-slate-800/80 bg-[#080E20]">
           <div className="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-xs">
-                CR
+              <div
+                className={`w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-xs ${
+                  currentRole === 'applicant'
+                    ? 'bg-gradient-to-br from-emerald-500 to-teal-600'
+                    : currentRole === 'administrator'
+                    ? 'bg-gradient-to-br from-purple-500 to-indigo-600'
+                    : 'bg-gradient-to-br from-blue-500 to-indigo-600'
+                }`}
+              >
+                {currentRole === 'applicant' ? 'AP' : currentRole === 'administrator' ? 'AD' : 'CR'}
               </div>
               <div className="truncate">
                 <p className="text-xs font-semibold text-white truncate">
                   {userProfile.name}
                 </p>
-                <p className="text-[10px] text-sky-400 truncate capitalize font-medium">
+                <p
+                  className={`text-[10px] truncate capitalize font-medium ${
+                    currentRole === 'applicant'
+                      ? 'text-emerald-400'
+                      : currentRole === 'administrator'
+                      ? 'text-purple-400'
+                      : 'text-sky-400'
+                  }`}
+                >
                   {userProfile.roleLabel}
                 </p>
               </div>

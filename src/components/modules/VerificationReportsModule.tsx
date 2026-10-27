@@ -19,7 +19,7 @@ import { DemoDisclaimer } from '../common/DemoDisclaimer';
 import type { VerificationReport } from '../../types';
 
 export const VerificationReportsModule: React.FC = () => {
-  const { reports, applications, showToast, backendConnected, refreshReports } = useApp();
+  const { reports, applications, showToast, backendConnected, refreshReports, currentRole } = useApp();
   const navigate = useNavigate();
 
   const [search, setSearch] = useState('');
@@ -31,10 +31,11 @@ export const VerificationReportsModule: React.FC = () => {
 
   const filteredReports = reports.filter(
     (r) =>
-      search === '' ||
-      r.id.toLowerCase().includes(search.toLowerCase()) ||
-      r.applicationId.toLowerCase().includes(search.toLowerCase()) ||
-      r.applicantName.toLowerCase().includes(search.toLowerCase())
+      (currentRole !== 'applicant' || r.applicationId === 'APP2026001' || r.applicantName.toLowerCase().includes('abc college')) &&
+      (search === '' ||
+        r.id.toLowerCase().includes(search.toLowerCase()) ||
+        r.applicationId.toLowerCase().includes(search.toLowerCase()) ||
+        r.applicantName.toLowerCase().includes(search.toLowerCase()))
   );
 
   const handleDownloadPdf = async (reportId: string) => {
@@ -108,13 +109,15 @@ export const VerificationReportsModule: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2.5">
-          <button
-            onClick={() => setShowGenerateModal(true)}
-            className="inline-flex items-center gap-2 px-3.5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-xs transition-all cursor-pointer"
-          >
-            <FilePlus className="w-4 h-4" />
-            <span>Generate New Report</span>
-          </button>
+          {currentRole !== 'applicant' && (
+            <button
+              onClick={() => setShowGenerateModal(true)}
+              className="inline-flex items-center gap-2 px-3.5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-xs transition-all cursor-pointer"
+            >
+              <FilePlus className="w-4 h-4" />
+              <span>Generate New Report</span>
+            </button>
+          )}
 
           <button
             onClick={handleExportAll}

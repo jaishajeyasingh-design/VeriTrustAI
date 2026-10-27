@@ -3,17 +3,46 @@ import { useNavigate } from 'react-router-dom';
 import {
   Search,
   ShieldCheck,
-  Lock
+  Lock,
+  ShieldAlert
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { DemoDisclaimer } from '../common/DemoDisclaimer';
 
 export const AuditTrailModule: React.FC = () => {
-  const { auditTrail, searchQuery, setSearchQuery } = useApp();
+  const { auditTrail, searchQuery, setSearchQuery, currentRole } = useApp();
   const navigate = useNavigate();
 
   const [filterAction, setFilterAction] = useState('All');
   const [filterDate, setFilterDate] = useState('7d');
+
+  // If applicant, restrict access
+  if (currentRole === 'applicant') {
+    return (
+      <div className="space-y-6">
+        <DemoDisclaimer variant="banner" moduleName="Audit Trail Ledger" />
+        <div className="bg-white p-10 rounded-2xl border border-slate-200/80 shadow-xs text-center max-w-xl mx-auto space-y-4">
+          <div className="w-14 h-14 rounded-2xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center mx-auto shadow-xs">
+            <ShieldAlert className="w-7 h-7" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-slate-900">Restricted Access Module</h2>
+            <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
+              The Immutable Cryptographic Audit Ledger is restricted to Senior Compliance Reviewers and System Administrators. Institutional applicants do not have privileges to view internal audit ledgers.
+            </p>
+          </div>
+          <div className="pt-2">
+            <button
+              onClick={() => navigate('/applications')}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-xs transition-all cursor-pointer"
+            >
+              Return to My Applications →
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const filteredEvents = auditTrail.filter((evt) => {
     const matchSearch =

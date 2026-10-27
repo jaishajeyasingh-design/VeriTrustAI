@@ -143,15 +143,35 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleMobile }) => {
           )}
         </div>
 
-        {/* Start New Verification Primary Button */}
-        <button
-          onClick={() => navigate('/new-verification')}
-          className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-semibold rounded-xl shadow-xs shadow-blue-500/20 transition-all cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          <span className="hidden sm:inline">Start New Verification</span>
-          <span className="sm:hidden">Verify</span>
-        </button>
+        {/* Role-tailored Primary Action Button */}
+        {currentRole === 'applicant' ? (
+          <button
+            onClick={() => navigate('/new-verification')}
+            className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-semibold rounded-xl shadow-xs shadow-emerald-500/20 transition-all cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:inline">Submit Application</span>
+            <span className="sm:hidden">Apply</span>
+          </button>
+        ) : currentRole === 'reviewer' ? (
+          <button
+            onClick={() => navigate('/applications')}
+            className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-semibold rounded-xl shadow-xs shadow-blue-500/20 transition-all cursor-pointer"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span className="hidden sm:inline">Review Queue</span>
+            <span className="sm:hidden">Queue</span>
+          </button>
+        ) : (
+          <button
+            onClick={() => navigate('/new-verification')}
+            className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-xs font-semibold rounded-xl shadow-xs shadow-indigo-500/20 transition-all cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:inline">New Verification</span>
+            <span className="sm:hidden">Verify</span>
+          </button>
+        )}
 
         {/* Notifications Popup */}
         <div className="relative">
@@ -212,15 +232,27 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleMobile }) => {
               </div>
 
               <div className="p-2 border-t border-slate-100 bg-slate-50 text-center">
-                <button
-                  onClick={() => {
-                    setNotificationsOpen(false);
-                    navigate('/audit');
-                  }}
-                  className="text-xs text-blue-600 hover:text-blue-800 font-semibold"
-                >
-                  View Full Audit Trail →
-                </button>
+                {currentRole === 'applicant' ? (
+                  <button
+                    onClick={() => {
+                      setNotificationsOpen(false);
+                      navigate('/applications');
+                    }}
+                    className="text-xs text-blue-600 hover:text-blue-800 font-semibold"
+                  >
+                    View My Applications →
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setNotificationsOpen(false);
+                      navigate('/audit');
+                    }}
+                    className="text-xs text-blue-600 hover:text-blue-800 font-semibold"
+                  >
+                    View Full Audit Trail →
+                  </button>
+                )}
               </div>
             </div>
           )}
@@ -228,11 +260,20 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleMobile }) => {
 
         {/* User Avatar & Settings Quick Trigger */}
         <button
-          onClick={() => navigate('/settings')}
+          onClick={() => navigate(currentRole === 'administrator' ? '/settings' : '/applications')}
+          title={currentRole === 'administrator' ? 'System Settings' : 'My Account Profile'}
           className="flex items-center gap-2 pl-1 hover:opacity-85 transition-opacity cursor-pointer"
         >
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-slate-800 to-slate-900 border border-slate-700 text-white text-xs font-bold flex items-center justify-center shadow-xs">
-            CR
+          <div
+            className={`w-8 h-8 rounded-xl border border-white/20 text-white text-xs font-bold flex items-center justify-center shadow-xs ${
+              currentRole === 'applicant'
+                ? 'bg-gradient-to-tr from-emerald-600 to-teal-500'
+                : currentRole === 'administrator'
+                ? 'bg-gradient-to-tr from-purple-600 to-indigo-700'
+                : 'bg-gradient-to-tr from-blue-600 to-indigo-600'
+            }`}
+          >
+            {currentRole === 'applicant' ? 'AP' : currentRole === 'administrator' ? 'AD' : 'CR'}
           </div>
           <div className="hidden xl:block text-left">
             <p className="text-xs font-semibold text-slate-800 leading-none">

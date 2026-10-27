@@ -175,15 +175,36 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (typeof window !== 'undefined') {
       localStorage.setItem('vt_active_role', role);
     }
-    const roleLabels: Record<UserRole, string> = {
-      reviewer: 'Senior Compliance Officer',
-      applicant: 'Authorized Institutional Representative',
-      administrator: 'System & Policy Administrator'
+    const personas: Record<UserRole, Partial<UserProfile>> = {
+      applicant: {
+        name: 'Dr. S. K. Ramanathan',
+        role: 'applicant',
+        roleLabel: 'Authorized Institutional Representative',
+        email: 'registrar@abccollege.edu.in',
+        organization: 'ABC College of Engineering & Tech',
+        department: 'Registrar & Institutional Affairs'
+      },
+      reviewer: {
+        name: 'Senior Officer Patel',
+        role: 'reviewer',
+        roleLabel: 'Senior Compliance Officer',
+        email: 'reviewer@veritrust.in',
+        organization: 'AICTE Regulatory Council',
+        department: 'Accreditation Assessment Wing'
+      },
+      administrator: {
+        name: 'Chief Admin Sharma',
+        role: 'administrator',
+        roleLabel: 'System & Policy Administrator',
+        email: 'admin@veritrust.gov.in',
+        organization: 'Central Regulatory Authority',
+        department: 'System & Security Governance'
+      }
     };
+
     setUserProfile((prev) => ({
       ...prev,
-      role,
-      roleLabel: roleLabels[role]
+      ...personas[role]
     }));
     showToast(`Switched active view role to: ${role.toUpperCase()}`);
   };

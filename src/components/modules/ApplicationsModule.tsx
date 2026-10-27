@@ -23,7 +23,7 @@ import { DemoDisclaimer } from '../common/DemoDisclaimer';
 import type { Application } from '../../types';
 
 export const ApplicationsModule: React.FC = () => {
-  const { applications, updateApplicationStatus, addApplication, searchQuery, setSearchQuery } = useApp();
+  const { applications, updateApplicationStatus, addApplication, searchQuery, setSearchQuery, currentRole } = useApp();
   const navigate = useNavigate();
 
   // Filters
@@ -120,32 +120,60 @@ export const ApplicationsModule: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-              Applications
+              {currentRole === 'applicant'
+                ? 'My Submitted Applications'
+                : currentRole === 'reviewer'
+                ? 'Compliance Review Queue'
+                : 'All Applications'}
             </h1>
             <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">
               {filteredApps.length} entries
             </span>
           </div>
           <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            View, search, filter and audit all submitted institutional compliance applications.
+            {currentRole === 'applicant'
+              ? 'Track compliance verification status, reviewer findings, and updates for your institution.'
+              : currentRole === 'reviewer'
+              ? 'Adjudicate applications, inspect findings, and issue statutory clearances.'
+              : 'View, search, filter and audit all submitted institutional compliance applications.'}
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => setCreateModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 text-xs font-semibold shadow-2xs transition-all cursor-pointer"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Create Application</span>
-          </button>
-          <button
-            onClick={() => navigate('/new-verification')}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm shadow-blue-500/20 transition-all cursor-pointer"
-          >
-            <FileCheck2 className="w-4 h-4" />
-            <span>Start Verification</span>
-          </button>
+          {currentRole === 'applicant' ? (
+            <button
+              onClick={() => navigate('/new-verification')}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-sm shadow-emerald-500/20 transition-all cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Submit New Application</span>
+            </button>
+          ) : currentRole === 'reviewer' ? (
+            <button
+              onClick={() => setStatusFilter(statusFilter === 'Needs Review' ? 'All' : 'Needs Review')}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm shadow-blue-500/20 transition-all cursor-pointer"
+            >
+              <FileCheck2 className="w-4 h-4" />
+              <span>{statusFilter === 'Needs Review' ? 'Show All Applications' : 'Filter Needs Review'}</span>
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={() => setCreateModalOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 text-xs font-semibold shadow-2xs transition-all cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Create Application</span>
+              </button>
+              <button
+                onClick={() => navigate('/new-verification')}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm shadow-blue-500/20 transition-all cursor-pointer"
+              >
+                <FileCheck2 className="w-4 h-4" />
+                <span>Start Verification</span>
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -236,8 +264,8 @@ export const ApplicationsModule: React.FC = () => {
         </div>
       </div>
 
-      {/* Batch Actions Bar (when rows are selected) */}
-      {selectedIds.length > 0 && (
+      {/* Batch Actions Bar (when rows are selected, Reviewer & Admin only) */}
+      {currentRole !== 'applicant' && selectedIds.length > 0 && (
         <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-2.5 flex items-center justify-between text-xs animate-in fade-in">
           <div className="flex items-center gap-2">
             <CheckCircle className="w-4 h-4 text-blue-600" />
@@ -251,7 +279,7 @@ export const ApplicationsModule: React.FC = () => {
                 selectedIds.forEach((id) => updateApplicationStatus(id, 'Verified', 'Batch approved by reviewer'));
                 setSelectedIds([]);
               }}
-              className="px-3 py-1 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-colors"
+              className="px-3 py-1 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-colors cursor-pointer"
             >
               Batch Approve
             </button>
@@ -260,13 +288,13 @@ export const ApplicationsModule: React.FC = () => {
                 selectedIds.forEach((id) => updateApplicationStatus(id, 'Needs Review', 'Batch flagged for audit'));
                 setSelectedIds([]);
               }}
-              className="px-3 py-1 bg-amber-600 text-white rounded-lg font-semibold hover:bg-amber-700 transition-colors"
+              className="px-3 py-1 bg-amber-600 text-white rounded-lg font-semibold hover:bg-amber-700 transition-colors cursor-pointer"
             >
               Flag for Audit
             </button>
             <button
               onClick={() => setSelectedIds([])}
-              className="text-slate-500 hover:text-slate-800 px-2"
+              className="text-slate-500 hover:text-slate-800 px-2 cursor-pointer"
             >
               Cancel
             </button>
@@ -280,18 +308,20 @@ export const ApplicationsModule: React.FC = () => {
           <table className="w-full text-left text-xs">
             <thead>
               <tr className="bg-slate-50/70 border-b border-slate-200/80 text-[11px] uppercase tracking-wider text-slate-500 font-semibold select-none">
-                <th className="py-3 px-4 w-10">
-                  <button
-                    onClick={handleSelectAll}
-                    className="text-slate-400 hover:text-slate-600"
-                  >
-                    {selectedIds.length === filteredApps.length && filteredApps.length > 0 ? (
-                      <CheckSquare className="w-4 h-4 text-blue-600" />
-                    ) : (
-                      <Square className="w-4 h-4" />
-                    )}
-                  </button>
-                </th>
+                {currentRole !== 'applicant' && (
+                  <th className="py-3 px-4 w-10">
+                    <button
+                      onClick={handleSelectAll}
+                      className="text-slate-400 hover:text-slate-600"
+                    >
+                      {selectedIds.length === filteredApps.length && filteredApps.length > 0 ? (
+                        <CheckSquare className="w-4 h-4 text-blue-600" />
+                      ) : (
+                        <Square className="w-4 h-4" />
+                      )}
+                    </button>
+                  </th>
+                )}
                 <th className="py-3 px-4">Application ID</th>
                 <th className="py-3 px-4">Applicant Name</th>
                 <th className="py-3 px-4">Type</th>
@@ -305,7 +335,7 @@ export const ApplicationsModule: React.FC = () => {
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {filteredApps.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="py-12 text-center text-slate-400">
+                  <td colSpan={currentRole !== 'applicant' ? 9 : 8} className="py-12 text-center text-slate-400">
                     <Building2 className="w-8 h-8 mx-auto mb-2 opacity-40" />
                     <p className="text-sm font-medium text-slate-600">No applications found</p>
                     <p className="text-xs text-slate-400 mt-0.5">Try altering your search or filters</p>
@@ -322,18 +352,20 @@ export const ApplicationsModule: React.FC = () => {
                       }`}
                       onClick={() => navigate(`/applications/${app.id}`)}
                     >
-                      <td className="py-3 px-4" onClick={(e) => e.stopPropagation()}>
-                        <button
-                          onClick={() => handleToggleSelect(app.id)}
-                          className="text-slate-400 hover:text-slate-600"
-                        >
-                          {isSelected ? (
-                            <CheckSquare className="w-4 h-4 text-blue-600" />
-                          ) : (
-                            <Square className="w-4 h-4" />
-                          )}
-                        </button>
-                      </td>
+                      {currentRole !== 'applicant' && (
+                        <td className="py-3 px-4" onClick={(e) => e.stopPropagation()}>
+                          <button
+                            onClick={() => handleToggleSelect(app.id)}
+                            className="text-slate-400 hover:text-slate-600"
+                          >
+                            {isSelected ? (
+                              <CheckSquare className="w-4 h-4 text-blue-600" />
+                            ) : (
+                              <Square className="w-4 h-4" />
+                            )}
+                          </button>
+                        </td>
+                      )}
 
                       <td className="py-3 px-4 font-mono font-bold text-blue-600 group-hover:underline">
                         {app.id}
@@ -369,59 +401,68 @@ export const ApplicationsModule: React.FC = () => {
                       </td>
 
                       <td className="py-3 px-4 text-right" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center justify-end gap-1.5">
+                        {currentRole === 'applicant' ? (
                           <button
                             onClick={() => navigate(`/applications/${app.id}`)}
-                            className="px-3 py-1 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-semibold rounded-lg text-xs transition-colors"
+                            className="px-3.5 py-1.5 bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white font-semibold rounded-lg text-xs transition-colors"
                           >
-                            View
+                            View Details →
                           </button>
-
-                          <div className="relative">
+                        ) : (
+                          <div className="flex items-center justify-end gap-1.5">
                             <button
-                              onClick={() => setActiveMenuId(activeMenuId === app.id ? null : app.id)}
-                              className="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg"
-                              aria-label="More options"
+                              onClick={() => navigate(`/applications/${app.id}`)}
+                              className="px-3 py-1 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-semibold rounded-lg text-xs transition-colors"
                             >
-                              <MoreVertical className="w-4 h-4" />
+                              View
                             </button>
 
-                            {activeMenuId === app.id && (
-                              <div className="absolute right-0 mt-1 w-44 bg-white rounded-xl shadow-xl border border-slate-200 py-1 z-30 animate-in fade-in">
-                                <button
-                                  onClick={() => {
-                                    updateApplicationStatus(app.id, 'Verified', 'Quick verified from list');
-                                    setActiveMenuId(null);
-                                  }}
-                                  className="w-full text-left px-3 py-1.5 text-xs text-emerald-700 hover:bg-emerald-50 flex items-center gap-2"
-                                >
-                                  <CheckCircle className="w-3.5 h-3.5" />
-                                  <span>Mark Verified</span>
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    updateApplicationStatus(app.id, 'Needs Review', 'Flagged for reviewer follow-up');
-                                    setActiveMenuId(null);
-                                  }}
-                                  className="w-full text-left px-3 py-1.5 text-xs text-amber-700 hover:bg-amber-50 flex items-center gap-2"
-                                >
-                                  <AlertTriangle className="w-3.5 h-3.5" />
-                                  <span>Flag for Review</span>
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    updateApplicationStatus(app.id, 'Rejected', 'Rejected by reviewer');
-                                    setActiveMenuId(null);
-                                  }}
-                                  className="w-full text-left px-3 py-1.5 text-xs text-rose-700 hover:bg-rose-50 flex items-center gap-2"
-                                >
-                                  <XCircle className="w-3.5 h-3.5" />
-                                  <span>Reject Application</span>
-                                </button>
-                              </div>
-                            )}
+                            <div className="relative">
+                              <button
+                                onClick={() => setActiveMenuId(activeMenuId === app.id ? null : app.id)}
+                                className="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg"
+                                aria-label="More options"
+                              >
+                                <MoreVertical className="w-4 h-4" />
+                              </button>
+
+                              {activeMenuId === app.id && (
+                                <div className="absolute right-0 mt-1 w-44 bg-white rounded-xl shadow-xl border border-slate-200 py-1 z-30 animate-in fade-in">
+                                  <button
+                                    onClick={() => {
+                                      updateApplicationStatus(app.id, 'Verified', 'Quick verified from list');
+                                      setActiveMenuId(null);
+                                    }}
+                                    className="w-full text-left px-3 py-1.5 text-xs text-emerald-700 hover:bg-emerald-50 flex items-center gap-2"
+                                  >
+                                    <CheckCircle className="w-3.5 h-3.5" />
+                                    <span>Mark Verified</span>
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      updateApplicationStatus(app.id, 'Needs Review', 'Flagged for reviewer follow-up');
+                                      setActiveMenuId(null);
+                                    }}
+                                    className="w-full text-left px-3 py-1.5 text-xs text-amber-700 hover:bg-amber-50 flex items-center gap-2"
+                                  >
+                                    <AlertTriangle className="w-3.5 h-3.5" />
+                                    <span>Flag for Review</span>
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      updateApplicationStatus(app.id, 'Rejected', 'Rejected from list action');
+                                      setActiveMenuId(null);
+                                    }}
+                                    className="w-full text-left px-3 py-1.5 text-xs text-rose-700 hover:bg-rose-50 flex items-center gap-2"
+                                  >
+                                    <XCircle className="w-3.5 h-3.5" />
+                                    <span>Reject Application</span>
+                                  </button>
+                                </div>
+                              )}
+                            </div>
                           </div>
-                        </div>
+                        )}
                       </td>
                     </tr>
                   );
@@ -430,8 +471,7 @@ export const ApplicationsModule: React.FC = () => {
             </tbody>
           </table>
         </div>
-
-        {/* Pagination footer */}
+      {/* Pagination footer */}
         <div className="p-4 border-t border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
           <div>
             Showing <span className="font-semibold text-slate-800">1-{filteredApps.length}</span> of{' '}

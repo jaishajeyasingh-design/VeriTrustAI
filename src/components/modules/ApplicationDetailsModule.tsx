@@ -30,7 +30,8 @@ export const ApplicationDetailsModule: React.FC = () => {
     showToast,
     backendConnected,
     refreshApplication,
-    refreshReports
+    refreshReports,
+    currentRole
   } = useApp();
 
   const app = applications.find((a) => a.id === id) || applications[0];
@@ -153,26 +154,28 @@ export const ApplicationDetailsModule: React.FC = () => {
             </span>
           </div>
 
-          {/* Action Buttons: Run Validation + Take Action */}
+          {/* Action Buttons: Tailored per role */}
           <div className="flex items-center gap-2.5">
-            <button
-              onClick={handleRunValidation}
-              disabled={isValidating}
-              className="inline-flex items-center gap-2 px-3.5 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 disabled:opacity-60 text-white text-xs font-bold rounded-xl shadow-sm shadow-indigo-500/20 transition-all cursor-pointer"
-              title="Execute deterministic cross-document compliance rules"
-            >
-              {isValidating ? (
-                <>
-                  <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  <span>Evaluating Rules...</span>
-                </>
-              ) : (
-                <>
-                  <ShieldCheck className="w-4 h-4" />
-                  <span>Run Validation</span>
-                </>
-              )}
-            </button>
+            {currentRole !== 'applicant' && (
+              <button
+                onClick={handleRunValidation}
+                disabled={isValidating}
+                className="inline-flex items-center gap-2 px-3.5 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 disabled:opacity-60 text-white text-xs font-bold rounded-xl shadow-sm shadow-indigo-500/20 transition-all cursor-pointer"
+                title="Execute deterministic cross-document compliance rules"
+              >
+                {isValidating ? (
+                  <>
+                    <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>Evaluating Rules...</span>
+                  </>
+                ) : (
+                  <>
+                    <ShieldCheck className="w-4 h-4" />
+                    <span>Run Validation</span>
+                  </>
+                )}
+              </button>
+            )}
 
             <button
               onClick={handleGenerateReport}
@@ -188,61 +191,94 @@ export const ApplicationDetailsModule: React.FC = () => {
               ) : (
                 <>
                   <FileText className="w-4 h-4" />
-                  <span>Generate PDF</span>
+                  <span>{currentRole === 'applicant' ? 'Download Dossier (PDF)' : 'Generate PDF'}</span>
                 </>
               )}
             </button>
 
-            {/* Take Action Dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => setActionMenuOpen(!actionMenuOpen)}
-                className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-bold rounded-xl shadow-sm shadow-blue-500/20 transition-all cursor-pointer"
-              >
-                <span>Take Action ▾</span>
-              </button>
+            {/* Take Action Dropdown (Reviewers & Admins only) */}
+            {currentRole !== 'applicant' ? (
+              <div className="relative">
+                <button
+                  onClick={() => setActionMenuOpen(!actionMenuOpen)}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-bold rounded-xl shadow-sm shadow-blue-500/20 transition-all cursor-pointer"
+                >
+                  <span>Take Action ▾</span>
+                </button>
 
-            {actionMenuOpen && (
-              <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-200 py-1.5 z-40 animate-in fade-in">
-                <div className="px-3 py-1.5 border-b border-slate-100">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                    Reviewer Actions
-                  </span>
-                </div>
-                <button
-                  onClick={() => handleAction('Verified')}
-                  className="w-full text-left px-3.5 py-2 text-xs text-emerald-700 hover:bg-emerald-50 flex items-center gap-2 font-semibold"
-                >
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                  <span>Grant Clearance (Approve)</span>
-                </button>
-                <button
-                  onClick={() => handleAction('Needs Review')}
-                  className="w-full text-left px-3.5 py-2 text-xs text-amber-700 hover:bg-amber-50 flex items-center gap-2 font-semibold"
-                >
-                  <AlertTriangle className="w-4 h-4 text-amber-600" />
-                  <span>Flag for Senior Auditor</span>
-                </button>
-                <button
-                  onClick={() => handleAction('Pending')}
-                  className="w-full text-left px-3.5 py-2 text-xs text-blue-700 hover:bg-blue-50 flex items-center gap-2 font-semibold"
-                >
-                  <Clock className="w-4 h-4 text-blue-600" />
-                  <span>Request Applicant Resubmission</span>
-                </button>
-                <button
-                  onClick={() => handleAction('Rejected')}
-                  className="w-full text-left px-3.5 py-2 text-xs text-rose-700 hover:bg-rose-50 flex items-center gap-2 font-semibold"
-                >
-                  <XCircle className="w-4 h-4 text-rose-600" />
-                  <span>Reject Application</span>
-                </button>
+                {actionMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-200 py-1.5 z-40 animate-in fade-in">
+                    <div className="px-3 py-1.5 border-b border-slate-100">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        Reviewer Actions
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => handleAction('Verified')}
+                      className="w-full text-left px-3.5 py-2 text-xs text-emerald-700 hover:bg-emerald-50 flex items-center gap-2 font-semibold"
+                    >
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                      <span>Grant Clearance (Approve)</span>
+                    </button>
+                    <button
+                      onClick={() => handleAction('Needs Review')}
+                      className="w-full text-left px-3.5 py-2 text-xs text-amber-700 hover:bg-amber-50 flex items-center gap-2 font-semibold"
+                    >
+                      <AlertTriangle className="w-4 h-4 text-amber-600" />
+                      <span>Flag for Senior Auditor</span>
+                    </button>
+                    <button
+                      onClick={() => handleAction('Pending')}
+                      className="w-full text-left px-3.5 py-2 text-xs text-blue-700 hover:bg-blue-50 flex items-center gap-2 font-semibold"
+                    >
+                      <Clock className="w-4 h-4 text-blue-600" />
+                      <span>Request Applicant Resubmission</span>
+                    </button>
+                    <button
+                      onClick={() => handleAction('Rejected')}
+                      className="w-full text-left px-3.5 py-2 text-xs text-rose-700 hover:bg-rose-50 flex items-center gap-2 font-semibold"
+                    >
+                      <XCircle className="w-4 h-4 text-rose-600" />
+                      <span>Reject Application</span>
+                    </button>
+                  </div>
+                )}
               </div>
+            ) : (
+              <button
+                onClick={() => navigate('/vault')}
+                className="inline-flex items-center gap-2 px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
+              >
+                <span>Upload Additional Docs</span>
+              </button>
             )}
           </div>
         </div>
+
+        {/* Applicant Institutional Notice Banner */}
+        {currentRole === 'applicant' && (
+          <div className="mt-4 p-4 rounded-2xl bg-gradient-to-r from-emerald-50/90 via-teal-50/70 to-blue-50/80 border border-emerald-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold shrink-0 shadow-xs">
+                <CheckCircle2 className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="font-bold text-slate-900 text-xs sm:text-sm">
+                  Application Status: <span className="text-emerald-700">{app.status === 'Verified' ? 'Approved & Granted Clearance' : 'Active Institutional Review In Progress'}</span>
+                </p>
+                <p className="text-[11px] text-slate-600 mt-0.5">
+                  Submitted for {app.applicantName} (Ref: {app.referenceNo}). Regulatory evaluators are currently examining the uploaded statutory annexures.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-white border border-emerald-200 text-emerald-800 shadow-2xs">
+                {app.complianceScore}% Readiness
+              </span>
+            </div>
+          </div>
+        )}
       </div>
-    </div>
 
       {/* Tabs Navigation */}
       <div className="border-b border-slate-200 flex items-center gap-2 sm:gap-6 overflow-x-auto text-xs font-semibold select-none">
@@ -715,14 +751,16 @@ export const ApplicationDetailsModule: React.FC = () => {
               </div>
             </div>
 
-            <button
-              onClick={handleRunValidation}
-              disabled={isValidating}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs rounded-lg transition-colors cursor-pointer border border-indigo-200"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isValidating ? 'animate-spin' : ''}`} />
-              <span>{isValidating ? 'Evaluating...' : 'Re-run Compliance Checks'}</span>
-            </button>
+            {currentRole !== 'applicant' && (
+              <button
+                onClick={handleRunValidation}
+                disabled={isValidating}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs rounded-lg transition-colors cursor-pointer border border-indigo-200"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isValidating ? 'animate-spin' : ''}`} />
+                <span>{isValidating ? 'Evaluating...' : 'Re-run Compliance Checks'}</span>
+              </button>
+            )}
           </div>
 
           {app.findings.length === 0 ? (
@@ -882,13 +920,19 @@ export const ApplicationDetailsModule: React.FC = () => {
                     )}
                   </div>
 
-                  <button
-                    onClick={() => handleOpenReviewModal(f)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-50 active:bg-slate-100 text-blue-700 font-bold text-xs rounded-lg border border-blue-200 shadow-2xs transition-colors cursor-pointer"
-                  >
-                    <MessageSquare className="w-3.5 h-3.5 text-blue-600" />
-                    <span>{f.reviewedBy ? 'Update Review Decision' : 'Review Finding'}</span>
-                  </button>
+                  {currentRole !== 'applicant' ? (
+                    <button
+                      onClick={() => handleOpenReviewModal(f)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-50 active:bg-slate-100 text-blue-700 font-bold text-xs rounded-lg border border-blue-200 shadow-2xs transition-colors cursor-pointer"
+                    >
+                      <MessageSquare className="w-3.5 h-3.5 text-blue-600" />
+                      <span>{f.reviewedBy ? 'Update Review Decision' : 'Review Finding'}</span>
+                    </button>
+                  ) : (
+                    <span className="text-[11px] font-semibold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md">
+                      Auditor Evaluation Pending
+                    </span>
+                  )}
                 </div>
               </div>
             ))

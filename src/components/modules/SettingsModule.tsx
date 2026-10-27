@@ -10,7 +10,7 @@ import { Modal } from '../common/Modal';
 import { api, getApiBaseUrl, getApiToken } from '../../services/apiClient';
 
 export const SettingsModule: React.FC = () => {
-  const { userProfile, updateUserProfile, showToast, checkBackendConnection } = useApp();
+  const { userProfile, updateUserProfile, showToast, checkBackendConnection, currentRole } = useApp();
 
   const [activeTab, setActiveTab] = useState<
     'Profile' | 'Organization' | 'Notifications' | 'Security' | 'Preferences'
@@ -86,7 +86,9 @@ export const SettingsModule: React.FC = () => {
     setEditProfileOpen(false);
   };
 
-  const tabs = ['Profile', 'Organization', 'Notifications', 'Security', 'Preferences'] as const;
+  const tabs = currentRole === 'administrator'
+    ? (['Profile', 'Organization', 'Notifications', 'Security', 'Preferences'] as const)
+    : (['Profile', 'Organization', 'Notifications', 'Preferences'] as const);
 
   return (
     <div className="space-y-6">
@@ -100,7 +102,11 @@ export const SettingsModule: React.FC = () => {
             Settings & Configurations
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            Manage your compliance reviewer identity, organization parameters, and future FastAPI endpoint hooks.
+            {currentRole === 'applicant'
+              ? 'Manage your institutional profile, contact representative credentials, and notifications.'
+              : currentRole === 'reviewer'
+              ? 'Manage reviewer profile, notifications, and compliance preferences.'
+              : 'Manage compliance reviewer identity, organization parameters, and MERN/FastAPI gateway credentials.'}
           </p>
         </div>
 

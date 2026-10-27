@@ -24,7 +24,7 @@ import { DemoDisclaimer } from '../common/DemoDisclaimer';
 import type { DocumentItem, DocumentOCRResult } from '../../types';
 
 export const DocumentVaultModule: React.FC = () => {
-  const { documents, uploadDocumentFile, deleteDocument, showToast, backendConnected } = useApp();
+  const { documents, uploadDocumentFile, deleteDocument, showToast, backendConnected, currentRole } = useApp();
   const navigate = useNavigate();
 
   const [search, setSearch] = useState('');
@@ -153,7 +153,7 @@ export const DocumentVaultModule: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-              Document Vault
+              {currentRole === 'applicant' ? 'My Document Vault' : 'Document Vault'}
             </h1>
             <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-700">
               {filteredDocs.length} files
@@ -166,7 +166,9 @@ export const DocumentVaultModule: React.FC = () => {
             )}
           </div>
           <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            Enterprise repository with PyMuPDF digital text extraction and Tesseract OCR validation.
+            {currentRole === 'applicant'
+              ? 'Official institutional certificates, land deeds, and statutory attachments submitted for accreditation.'
+              : 'Enterprise repository with PyMuPDF digital text extraction and Tesseract OCR validation.'}
           </p>
         </div>
 
@@ -342,13 +344,15 @@ export const DocumentVaultModule: React.FC = () => {
                         >
                           <Download className="w-4 h-4" />
                         </button>
-                        <button
-                          onClick={() => deleteDocument(doc.id)}
-                          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-                          title="Delete"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        {currentRole === 'administrator' && (
+                          <button
+                            onClick={() => deleteDocument(doc.id)}
+                            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                            title="Delete Document (Administrator Only)"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
