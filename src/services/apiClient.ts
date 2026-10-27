@@ -59,8 +59,8 @@ export function getApiBaseUrl(): string {
   if (import.meta.env.VITE_API_BASE_URL) {
     return (import.meta.env.VITE_API_BASE_URL as string).replace(/\/+$/, '');
   }
-  // Default fallback
-  return 'http://localhost:8000/api/v1';
+  // Default fallback (MERN Stack port 5000)
+  return 'http://localhost:5000/api/v1';
 }
 
 // Get user configured API token safely from browser storage

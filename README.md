@@ -1,6 +1,6 @@
-# VeriTrust AI — Institutional Accreditation & Compliance Verification Platform
+# VeriTrust AI — Institutional Accreditation & Compliance Verification Platform (MERN Stack Edition)
 
-VeriTrust AI is an enterprise-grade statutory verification platform designed for higher education regulatory bodies, institutional accreditation reviews, and government licensing bureaus. It automates statutory document ingestion, OCR text extraction, cross-document deterministic consistency checks, reviewer adjudications, and cryptographic audit logging.
+VeriTrust AI is an enterprise-grade statutory verification platform designed for higher education regulatory bodies, institutional accreditation reviews, and government licensing bureaus. Built on the **MERN Stack** (MongoDB, Express.js, React, Node.js), it automates statutory document ingestion, OCR text extraction, cross-document deterministic consistency checks, reviewer adjudications, and cryptographic audit logging.
 
 ---
 
@@ -13,25 +13,25 @@ VeriTrust AI is an enterprise-grade statutory verification platform designed for
 └───────────────────────────────────┬────────────────────────────────────┘
                                     │ REST API (X-API-Key / Bearer)
 ┌───────────────────────────────────▼────────────────────────────────────┐
-│                    FastAPI Enterprise Backend                          │
+│                  Express.js + Node.js Enterprise Backend               │
 │                                                                        │
 │  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────────┐  │
-│  │   OCR Pipeline   │  │ Validation Engine│  │ ReportLab PDF Engine │  │
-│  │ PyMuPDF + Tess.  │  │  Rules Matrix    │  │ Signed Vector PDFs   │  │
+│  │   OCR Pipeline   │  │ Validation Engine│  │    PDFKit Engine     │  │
+│  │  pdf-parse + OCR │  │  Rules Matrix    │  │ Signed Vector PDFs   │  │
 │  └────────┬─────────┘  └────────┬─────────┘  └──────────┬───────────┘  │
 │           │                     │                       │              │
 │  ┌────────▼─────────────────────▼───────────────────────▼───────────┐  │
-│  │            SQLAlchemy 2.x ORM Data Access Layer                  │  │
-│  │          Foreign Keys • Strict App Isolation • Indexes           │  │
+│  │                 Mongoose ODM Data Access Layer                   │  │
+│  │         Strict App Isolation • Indexed Collections • Audit Chain  │  │
 │  └──────────────────────────────────┬───────────────────────────────┘  │
 └─────────────────────────────────────┼──────────────────────────────────┘
                                       │
             ┌─────────────────────────┴─────────────────────────┐
             │                                                   │
 ┌───────────▼───────────┐                           ┌───────────▼───────────┐
-│ SQLite Database File  │                           │ Non-Public Storage    │
-│ backend/data/         │                           │ backend/uploads/      │
-│ veritrust.db          │                           │ backend/uploads/rep/  │
+│   MongoDB Database    │                           │ Non-Public Storage    │
+│   mongodb://127.0.0.1 │                           │ backend/uploads/      │
+│   /veritrustai        │                           │ backend/uploads/rep/  │
 └───────────────────────┘                           └───────────────────────┘
 ```
 
