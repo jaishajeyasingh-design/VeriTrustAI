@@ -4,7 +4,7 @@ const config = require('../config/config');
 const checkHealth = (req, res) => {
   const dbStatus = getDBStatus();
   res.json({
-    status: dbStatus === 'connected' ? 'ok' : 'degraded',
+    status: dbStatus === 'connected' ? 'healthy' : 'degraded',
     service: 'VeriTrust AI Backend (MERN Stack Edition)',
     version: '2.0.0',
     demo_mode: config.DEMO_MODE,

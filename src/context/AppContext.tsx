@@ -96,11 +96,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const latency = Math.round(performance.now() - startTime);
       setBackendLatencyMs(latency);
 
-      if (health.status === 'healthy') {
+      if (health.status === 'healthy' || health.status === 'ok') {
         setBackendConnected(true);
         setIsFallbackMode(false);
 
-        // Load live applications from FastAPI backend
+        // Load live applications from backend
         try {
           const appRes = await api.applications.list({ limit: 100 });
           if (appRes && appRes.items) {
@@ -110,7 +110,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           console.warn('Could not load applications from backend, keeping cached state:', e);
         }
 
-        // Load live audit events from FastAPI backend
+        // Load live audit events from backend
         try {
           const audits = await api.audit.list();
           if (audits && audits.length > 0) {
@@ -120,7 +120,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           console.warn('Could not load audit trail from backend:', e);
         }
 
-        // Load live rules from FastAPI backend
+        // Load live rules from backend
         try {
           const liveRules = await api.rules.list();
           if (liveRules && liveRules.length > 0) {
@@ -130,7 +130,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           console.warn('Could not load rules from backend:', e);
         }
 
-        // Load live documents from FastAPI backend
+        // Load live documents from backend
         try {
           const liveDocs = await api.documents.list();
           if (liveDocs && liveDocs.length > 0) {
@@ -140,7 +140,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           console.warn('Could not load documents from backend:', e);
         }
 
-        // Load live verification reports from FastAPI backend
+        // Load live verification reports from backend
         try {
           const liveReports = await api.reports.list();
           if (liveReports && liveReports.length > 0) {
@@ -150,7 +150,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           console.warn('Could not load reports from backend:', e);
         }
 
-        showToast(`Connected to FastAPI Backend (${latency}ms)`);
+        showToast(`Connected to VeriTrust MERN Backend (${latency}ms)`);
         setIsCheckingBackend(false);
         return true;
       }

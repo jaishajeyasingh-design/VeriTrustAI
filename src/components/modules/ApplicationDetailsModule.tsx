@@ -58,7 +58,7 @@ export const ApplicationDetailsModule: React.FC = () => {
 
   const handleRunValidation = async () => {
     if (!backendConnected) {
-      showToast('FastAPI backend offline: Running in simulated local demonstration mode.');
+      showToast('Backend offline: Running in simulated local demonstration mode.');
       return;
     }
     setIsValidating(true);

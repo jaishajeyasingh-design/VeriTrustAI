@@ -142,6 +142,8 @@ class ValidationService {
     const certFields = certDoc ? (certDoc.extractedFields instanceof Map ? Object.fromEntries(certDoc.extractedFields) : (certDoc.extractedFields || {})) : {};
     const nocFields = nocDoc ? (nocDoc.extractedFields instanceof Map ? Object.fromEntries(nocDoc.extractedFields) : (nocDoc.extractedFields || {})) : {};
 
+    const makeId = (suffix) => `FIND-${Date.now().toString(36).toUpperCase()}-${suffix}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+
     // Rule R007: Registration Number Mismatch
     if (enabledRuleMap.has('R007') && appDoc && certDoc) {
       const formReg = appFields['Registration Number'] || appFields['Application ID'] || '';
@@ -151,7 +153,7 @@ class ValidationService {
         const comp = CrossDocumentComparator.compareRegistrationNumbers(formReg, certReg);
         if (comp.category === 'mismatch') {
           generatedFindings.push({
-            id: `FIND-${Date.now().toString(36).toUpperCase()}-1`,
+            id: makeId('REG'),
             applicationId: app.id,
             ruleId: 'R007',
             title: 'Registration Number Mismatch',
@@ -185,7 +187,7 @@ class ValidationService {
         const comp = CrossDocumentComparator.compareInstitutionNames(formName, certName);
         if (comp.category === 'mismatch' || comp.category === 'match_with_tolerance') {
           generatedFindings.push({
-            id: `FIND-${Date.now().toString(36).toUpperCase()}-2`,
+            id: makeId('NAME'),
             applicationId: app.id,
             ruleId: 'R002',
             title: comp.category === 'mismatch' ? 'Institution Legal Name Mismatch' : 'Institution Legal Name Slight Deviation',
@@ -215,7 +217,7 @@ class ValidationService {
       const validityStr = nocFields['Validity Period'] || '';
       if (/expires in|expiring|renewal required/i.test(validityStr)) {
         generatedFindings.push({
-          id: `FIND-${Date.now().toString(36).toUpperCase()}-3`,
+          id: makeId('EXP'),
           applicationId: app.id,
           ruleId: 'R004',
           title: 'Fire Safety NOC Approaching Expiry',
@@ -240,7 +242,7 @@ class ValidationService {
       for (const req of requiredTypes) {
         if (!docTypesPresent.has(req)) {
           generatedFindings.push({
-            id: `FIND-${Date.now().toString(36).toUpperCase()}-M`,
+            id: makeId(`MIS-${req.substring(0, 3).toUpperCase()}`),
             applicationId: app.id,
             ruleId: 'R001',
             title: `Mandatory Document Missing: ${req}`,

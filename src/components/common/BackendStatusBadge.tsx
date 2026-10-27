@@ -24,12 +24,12 @@ export const BackendStatusBadge: React.FC<BackendStatusBadgeProps> = ({ compact 
       <div className="group relative inline-flex items-center">
         <button
           onClick={() => checkBackendConnection()}
-          title="FastAPI server connected. Click to refresh health."
+          title="MERN server connected. Click to refresh health."
           className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80 shadow-2xs hover:bg-emerald-100/70 transition-colors cursor-pointer"
         >
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
           <Server className="w-3 h-3 text-emerald-600" />
-          <span className="hidden sm:inline">FastAPI Online</span>
+          <span className="hidden sm:inline">MERN Online</span>
           <span className="sm:hidden">API Online</span>
           {backendLatencyMs !== null && (
             <span className="hidden md:inline font-mono text-[10px] text-emerald-600 opacity-80">
@@ -52,7 +52,7 @@ export const BackendStatusBadge: React.FC<BackendStatusBadgeProps> = ({ compact 
       <span className="sm:hidden">Demo Fallback</span>
       <button
         onClick={() => checkBackendConnection()}
-        title="Retry connection to FastAPI server"
+        title="Retry connection to backend server"
         className="ml-1 p-0.5 text-amber-700 hover:text-amber-900 rounded hover:bg-amber-100 transition-colors cursor-pointer"
         aria-label="Retry backend connection"
       >

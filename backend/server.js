@@ -59,7 +59,7 @@ const startServer = async () => {
     // 2. Seed initial data if collections empty
     await seedDatabase();
 
-    // 3. Listen on port
+    // 3. Listen on primary port
     const server = app.listen(config.PORT, () => {
       console.log('====================================================');
       console.log(`🚀 VeriTrust AI (MERN Stack) Server Running!`);
@@ -69,6 +69,17 @@ const startServer = async () => {
       console.log(`📁 Uploads dir: ${config.UPLOAD_DIR}`);
       console.log('====================================================');
     });
+
+    // Also bind port 8000 for legacy/cached frontend clients if free
+    if (config.PORT !== 8000) {
+      try {
+        app.listen(8000, () => {
+          console.log(`📡 Dual compatibility listener active on http://localhost:8000`);
+        }).on('error', () => {
+          // Port 8000 occupied, ignore
+        });
+      } catch (_) {}
+    }
 
     return server;
   } catch (err) {
